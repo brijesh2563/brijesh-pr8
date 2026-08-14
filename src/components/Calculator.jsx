@@ -4,6 +4,10 @@ function Calculator() {
   const [num2, setNum2] = useState("");
   const [result, setResult] = useState("");
   const [operator, setOperator] = useState("+");
+  const [history, setHistory] = useState([]);
+
+  const operatorSymbols = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
   const calculate = () => {
     const a = Number(num1);
     const b = Number(num2);
@@ -33,13 +37,20 @@ function Calculator() {
         answer = 0;
     }
     setResult(answer);
+    setHistory((prev) =>
+      [{ num1: a, num2: b, op: operatorSymbols[operator], answer }, ...prev].slice(0, 3)
+    );
   };
   const clearCalculator = () => {
     setNum1("");
     setNum2("");
     setResult("");
     setOperator("+");
+    setHistory([]);
   };
+
+  const operators = ["+", "-", "*", "/"];
+
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
       <div className="w-full max-w-md text-center">
@@ -61,16 +72,22 @@ function Calculator() {
             className="mb-4 w-full rounded-lg border border-gray-700 bg-gray-800 p-3 text-white placeholder-gray-500 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30"
           />
 
-          <select
-            value={operator}
-            onChange={(e) => setOperator(e.target.value)}
-            className="mb-4 w-full rounded-lg border border-gray-700 bg-gray-800 p-3 text-white outline-none transition focus:border-indigo-500"
-          >
-            <option value="+">Addition (+)</option>
-            <option value="-">Subtraction (-)</option>
-            <option value="*">Multiplication (×)</option>
-            <option value="/">Division (÷)</option>
-          </select>
+          {/* Segmented Operator Control */}
+          <div className="mb-4 grid grid-cols-4 gap-1 rounded-lg bg-gray-800 p-1">
+            {operators.map((op) => (
+              <button
+                key={op}
+                onClick={() => setOperator(op)}
+                className={`rounded-md py-2.5 text-lg font-bold transition ${
+                  operator === op
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
+                    : "text-gray-400 hover:text-white hover:bg-gray-700"
+                }`}
+              >
+                {operatorSymbols[op]}
+              </button>
+            ))}
+          </div>
 
           <input
             type="number"
@@ -95,12 +112,40 @@ function Calculator() {
             </button>
           </div>
 
+          {/* Result with Full Expression */}
           {result !== "" && (
             <div className="mt-6 rounded-xl bg-gray-950 p-4 ring-1 ring-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
               <p className="text-sm text-gray-400">Result</p>
-              <p className="mt-1 text-3xl font-bold text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]">
-                {result}
+              {typeof result === "number" ? (
+                <>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {num1} {operatorSymbols[operator]} {num2}
+                  </p>
+                  <p className="mt-1 text-4xl font-bold text-indigo-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.4)]">
+                    {result}
+                  </p>
+                </>
+              ) : (
+                <p className="mt-1 text-lg font-semibold text-rose-400">
+                  {result}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Calculation History */}
+          {history.length > 0 && (
+            <div className="mt-4 rounded-lg bg-gray-800/50 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Recent
               </p>
+              <div className="space-y-1">
+                {history.map((h, i) => (
+                  <p key={i} className="text-sm text-gray-400">
+                    {h.num1} {h.op} {h.num2} = <span className="text-indigo-300 font-medium">{h.answer}</span>
+                  </p>
+                ))}
+              </div>
             </div>
           )}
         </div>
